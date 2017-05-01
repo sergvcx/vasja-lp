@@ -1,11 +1,29 @@
-phantom.injectJs('settings.js');
-var casper = require('casper').create();
-//var readline = require('readline');
+//phantom.injectJs('settings.js');
+var casper 	= require('casper').create();
+var json 	= require('love.json');
+var system 	= require('system');
+var fs     	= require('fs');
 
-var system = require('system');
+var username	=json['username'];
+var password	=json['password'];
+var lastindx	=json['lastindx'];
+var profile_dir	=json['profile_dir'];
 
 
-casper.echo("loveplanet Vasja started");
+function saveJSON(){
+	//this.echo('[saveJSON]'); DO NOT ECHO IN FUNCTION!!!
+	var jsonStr = "{\n";
+	jsonStr+= '"username":"'+username+"\",\n";
+	jsonStr+= '"password":"'+password+"\",\n";
+	jsonStr+= '"lastindx":'+lastindx+",\n";
+	jsonStr+= '"profile_dir":"'+profile_dir+"\"\n";
+	jsonStr+= '}';
+	fs.write('love.json', jsonStr, 'w');
+}
+
+
+
+casper.echo("Loveplanet Vasja started");
 //this.userAgent('Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)');
 casper.userAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X)');
 casper.start('https://loveplanet.ru/a-logon', function() {
@@ -47,13 +65,13 @@ casper.then(function() {
 	//		true);
 	//});
 	//this.echo('I am out of selector');
-	this.echo(email);
-	this.echo(password);
+	//this.echo(email);
+	//this.echo(password);
 	this.echo('Whaiting for form...');
 	this.waitForSelector('form', function(){
 		this.echo('Form detected');
 		this.fill('form', {
-			'login': email, 
+			'login': username, 
 			'password': password},
 			true);
 		},
@@ -170,7 +188,7 @@ casper.then(function() {
 		//	nextPage(count);
 		//}, ++count);
 		this.wait(1000,function(){
-			this.echo('I like '+count);
+			this.echo('I like '+lastindx);
 			
 			//<div class="pu-likes-head-link tdu">	<a href="#" data-closeid="#dlg_background">Играть дальше</a>	</div>
 			//this.waitForSelector('div.pu-likes-head-link.tdu',function(){
@@ -183,8 +201,11 @@ casper.then(function() {
 			//class="gbut_grd_green gnl_but36 w190"
 			this.waitForSelector('div.gbut_grd_green.gnl_but36.w190', 
 				function(){
-					this.capture('love='+count+'.png');
+					lastindx++;
+					this.capture(profile_dir+'/love='+lastindx+'.png');
 					this.click('div.gbut_grd_green.gnl_but36.w190');
+					saveJSON();
+					
 				},
 				function(){
 					this.echo('[ERROR-70]: no like button'+count);
